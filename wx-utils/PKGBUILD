@@ -1,0 +1,38 @@
+# Mantainer: Andriy Byelikov <andriybyelikov@gmail.com>
+
+pkgname=wx-utils
+pkgver=3.1.4
+pkgrel=1
+pkgdesc=""
+arch=('x86_64')
+url="https://wxwidgets.org"
+license=('custom:wxWindows')
+options=('!emptydirs')
+source=("https://github.com/wxWidgets/wxWidgets/releases/download/v$pkgver/wxWidgets-$pkgver.tar.bz2")
+sha256sums=('3ca3a19a14b407d0cdda507a7930c2e84ae1c8e74f946e0144d2fa7d881f1a94')
+
+build() {
+  cd wxWidgets-$pkgver
+  mkdir -p utils-build
+  cd utils-build
+  ../configure --prefix=/usr
+}
+
+# /usr/bin/wx-config
+# /usr/bin/wxrc
+# /usr/share/aclocal
+# /usr/share/bakefile
+package() {
+  pkgdesc=""
+
+  cd wxWidgets-$pkgver
+  cd utils-build
+  make DESTDIR="$pkgdir" install-wxrc
+  rm "$pkgdir"/usr/bin/wxrc
+  mv "$pkgdir"/usr/bin/wxrc-3.1 "$pkgdir"/usr/bin/wxrc
+  install -Dm644 ../wxwin.m4 "$pkgdir"/usr/share/aclocal/wxwin.m4
+  mkdir -p "$pkgdir"/usr/share/bakefile/presets
+  cp -r ../build/bakefiles/wxpresets/presets "$pkgdir"/usr/share/bakefile
+
+  install -Dm644 ../docs/licence.txt "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}

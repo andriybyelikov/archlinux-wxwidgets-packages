@@ -1,0 +1,86 @@
+diff --git a/Makefile.in b/Makefile.in
+index 82c179b..e5b9d18 100644
+--- a/Makefile.in
++++ b/Makefile.in
+@@ -14721,14 +14721,14 @@ locale_install:
+ 	$(INSTALL_DIR) $(DESTDIR)$(datadir)/locale/$$l ; \
+ 	$(INSTALL_DIR) $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES ; \
+ 	if test -f $(srcdir)/locale/$$l.mo ; then \
+-	$(INSTALL_DATA) $(srcdir)/locale/$$l.mo $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxstd.mo ; \
++	$(INSTALL_DATA) $(srcdir)/locale/$$l.mo $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxstd-$(WX_VERSION).mo ; \
+ 	fi ; \
+ 	done
+ 
+ locale_uninstall: 
+ 	for l in $(LOCALE_LINGUAS) ; do \
+-	if test -f $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxstd.mo ; then \
+-	rm -f $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxstd.mo ; \
++	if test -f $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxstd-$(WX_VERSION).mo ; then \
++	rm -f $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxstd-$(WX_VERSION).mo ; \
+ 	fi ; \
+ 	done
+ 
+@@ -14738,14 +14738,14 @@ locale_msw_install:
+ 	$(INSTALL_DIR) $(DESTDIR)$(datadir)/locale/$$l ; \
+ 	$(INSTALL_DIR) $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES ; \
+ 	if test -f $(srcdir)/locale/msw/$$l.mo ; then \
+-	$(INSTALL_DATA) $(srcdir)/locale/msw/$$l.mo $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxmsw.mo ; \
++	$(INSTALL_DATA) $(srcdir)/locale/msw/$$l.mo $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxmsw-$(WX_VERSION).mo ; \
+ 	fi ; \
+ 	done
+ 
+ locale_msw_uninstall: 
+ 	for l in $(LOCALE_MSW_LINGUAS) ; do \
+-	if test -f $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxmsw.mo ; then \
+-	rm -f $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxmsw.mo ; \
++	if test -f $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxmsw-$(WX_VERSION).mo ; then \
++	rm -f $(DESTDIR)$(datadir)/locale/$$l/LC_MESSAGES/wxmsw-$(WX_VERSION).mo ; \
+ 	fi ; \
+ 	done
+ 
+diff --git a/build/bakefiles/wx.bkl b/build/bakefiles/wx.bkl
+index 806b11a..fb0d83b 100644
+--- a/build/bakefiles/wx.bkl
++++ b/build/bakefiles/wx.bkl
+@@ -137,7 +137,7 @@
+         <using module="gettext"/>
+         <gettext-catalogs id="locale">
+             <srcdir>$(SRCDIR)/locale</srcdir>
+-            <catalog-name>wxstd</catalog-name>
++            <catalog-name>wxstd-$(WX_VERSION)</catalog-name>
+             <linguas>
+                 ca cs da de el es fi fr hu id it ja nl pl ru sl sv tr uk
+                 zh zh_CN zh_TW
+@@ -146,7 +146,7 @@
+         </gettext-catalogs>
+         <gettext-catalogs id="locale_msw">
+             <srcdir>$(SRCDIR)/locale/msw</srcdir>
+-            <catalog-name>wxmsw</catalog-name>
++            <catalog-name>wxmsw-$(WX_VERSION)</catalog-name>
+             <linguas>it</linguas>
+             <install-to>$(LOCALEDIR)</install-to>
+         </gettext-catalogs>
+diff --git a/src/common/translation.cpp b/src/common/translation.cpp
+index ee8b586..804769b 100644
+--- a/src/common/translation.cpp
++++ b/src/common/translation.cpp
+@@ -48,6 +48,7 @@
+ #include "wx/fontmap.h"
+ #include "wx/scopedptr.h"
+ #include "wx/stdpaths.h"
++#include "wx/version.h"
+ #include "wx/private/threadinfo.h"
+ 
+ #ifdef __WINDOWS__
+@@ -1522,8 +1523,9 @@ wxArrayString wxTranslations::GetAvailableTranslations(const wxString& domain) c
+ 
+ bool wxTranslations::AddStdCatalog()
+ {
+-    if ( !AddCatalog(wxS("wxstd")) )
+-        return false;
++    if ( !AddCatalog(wxS("wxstd-" wxVERSION_NUM_DOT_STRING_T)) )
++        if ( !AddCatalog(wxS("wxstd")) )
++            return false;
+ 
+     // there may be a catalog with toolkit specific overrides, it is not
+     // an error if this does not exist
