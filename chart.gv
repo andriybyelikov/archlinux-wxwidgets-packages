@@ -1,0 +1,22 @@
+digraph {
+    wxi18n[label="wx-i18n"];
+    libwxbase->wxi18n;
+    libwxgtk2,libwxgtk3->libwxbase;
+    wxgtk2config[label="wxgtk2-config"];
+    wxgtk2config->libwxgtk2;
+    wxgtk3config[label="wxgtk3-config"];
+    wxgtk3config->libwxgtk3;
+    wxheaders[label="wx-headers"];
+    setup_note[shape=diamond;label="OR*"];
+    wxheaders->setup_note->wxgtk2config,wxgtk3config;
+    wxutils[label="wx-utils"];
+    wxutils->libwxbase;
+
+    subgraph cluster_runtime {
+        label="runtime";
+        wxi18n, libwxbase, libwxgtk2, libwxgtk3;
+    }
+
+    label="*Headers are complemented with a setup.h tied to the particular\n
+        build configuration which reveals the appropiate definitions.";
+}

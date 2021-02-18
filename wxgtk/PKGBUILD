@@ -106,7 +106,7 @@ package_wxgtk2-config() {
 
   cd wxWidgets-$pkgver/gtk2-build
   make DESTDIR="$pkgdir" install
-  rm -r "$pkgdir"/usr/{bin/{wxrc*},include,lib/libwx_*,share}
+  rm -r "$pkgdir"/usr/{bin/wxrc*,include,lib/libwx_*,share}
 
   mkdir -p "$pkgdir"/usr/share/licenses/$pkgname
   ln -s /usr/share/licenses/libwxbase/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
@@ -119,7 +119,7 @@ package_wxgtk3-config() {
 
   cd wxWidgets-$pkgver/gtk3-build
   make DESTDIR="$pkgdir" install
-  rm -r "$pkgdir"/usr/{bin/{wxrc*},include,lib/{libwx_*,wx/3.0},share}
+  rm -r "$pkgdir"/usr/{bin/wxrc*,include,lib/{libwx_*,wx/3.0},share}
 
   mkdir -p "$pkgdir"/usr/share/licenses/$pkgname
   ln -s /usr/share/licenses/libwxbase/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
