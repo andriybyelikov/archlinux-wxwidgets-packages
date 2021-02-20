@@ -1,11 +1,10 @@
-# Mantainer: Andriy Byelikov <andriybyelikov@gmail.com>
+# Maintainer: Andriy Byelikov <andriybyelikov@gmail.com>
 
 pkgbase=wxgtk
-pkgname=(libwxbase libwxgtk2 libwxgtk3 wx-i18n wxgtk2-config wxgtk3-config
-         wx-headers)
-pkgver=3.0.5.1
+pkgname=(wxgtk-common wxgtk2 wxgtk3 wx-utils)
+_wx_release=3.0
+pkgver=$_wx_release.5.1
 pkgrel=1
-pkgdesc=""
 arch=('x86_64')
 url="https://wxwidgets.org"
 license=('custom:wxWindows')
@@ -16,124 +15,66 @@ sha256sums=('440f6e73cf5afb2cbf9af10cec8da6cdd3d3998d527598a53db87099524ac807'
             '46a1bb97d69163547da13d5e23a4c73e68de27ee601da5d2fb5bc5c417931453')
 
 prepare() {
-  cd wxWidgets-$pkgver
+  cd wxWidgets
   patch -Np1 -i ../make-abicheck-non-fatal.patch
 }
 
+_build() {
+  mkdir -p gtk$1-build gtk$1-install
+  cd gtk$1-build
+  ../configure --prefix=/usr --with-opengl --enable-graphics_ctx \
+    --enable-mediactrl --with-regex=builtin --disable-precomp-headers \
+    --with-libpng=sys --with-libxpm=sys --with-libjpeg=sys --with-libtiff=sys \
+    --with-gtk=$@
+  make DESTDIR="$srcdir"/wxWidgets/gtk$1-install install
+}
+
 build() {
-  cd wxWidgets-$pkgver
-
+  cd wxWidgets
   make -C locale allmo
-
-  mkdir -p gtk2-build
-  cd gtk2-build
-  ../configure --prefix=/usr --with-opengl --enable-graphics_ctx \
-    --enable-mediactrl --with-regex=builtin --disable-precomp-headers \
-    --with-libpng=sys --with-libxpm=sys --with-libjpeg=sys --with-libtiff=sys \
-    --with-gtk=2
-  make
-
+  _build 2
   cd ..
-
-  mkdir -p gtk3-build
-  cd gtk3-build
-  ../configure --prefix=/usr --with-opengl --enable-graphics_ctx \
-    --enable-mediactrl --with-regex=builtin --disable-precomp-headers \
-    --with-libpng=sys --with-libxpm=sys --with-libjpeg=sys --with-libtiff=sys \
-    --with-gtk=3 --enable-webview
-  make
+  _build 3 --enable-webview
 }
 
-# runtime packages
-
-# /usr/lib/libwx_base*
-package_libwxbase() {
-  pkgdesc=""
-
-  cd wxWidgets-$pkgver/gtk2-build
-  make DESTDIR="$pkgdir" install
-  rm -r "$pkgdir"/usr/{bin,include,lib/{wx,libwx_gtk*},share}
-
-  install -Dm644 ../docs/licence.txt "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+_package() {
+  cd wxWidgets/gtk$1-install
+  shift
+  cp -r --preserve=mode --parents $@ "$pkgdir"
+  cd ../docs
+  install -Dm644 licence.txt "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }
 
-# /usr/lib/libwx_gtk*
-package_libwxgtk2() {
-  pkgdesc=""
-  depends=(libwxbase)
+package_wxgtk-common() {
+  pkgdesc="wxWidgets base libraries, headers and gettext catalogs"
+  #depends=(curl expat gcc-libs glib2 glibc libsecret xz zlib)
 
-  cd wxWidgets-$pkgver/gtk2-build
-  make DESTDIR="$pkgdir" install
-  rm -r "$pkgdir"/usr/{bin,include,lib/{wx/{config,include},libwx_base*},share}
-
-  mkdir -p "$pkgdir"/usr/share/licenses/$pkgname
-  ln -s /usr/share/licenses/libwxbase/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+  _package 2 ./usr/{include/,lib/libwx_base*,share/locale/}
 }
 
-# /usr/lib/libwx_gtk*
-package_libwxgtk3() {
-  pkgdesc=""
-  depends=(libwxbase)
+package_wxgtk2() {
+  pkgdesc="wxGTK 2 libraries, config script and setup.h"
+  #depends=(wxgtk-common cairo fontconfig gdk-pixbuf2 gst-plugins-base-libs
+  #  gstreamer gtk2 libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11
+  #  libxtst libxxf86vm pango)
 
-  cd wxWidgets-$pkgver/gtk3-build
-  make DESTDIR="$pkgdir" install
-  rm -r "$pkgdir"/usr/{bin,include,lib/{wx/{config,include},libwx_base*},share}
-
-  mkdir -p "$pkgdir"/usr/share/licenses/$pkgname
-  ln -s /usr/share/licenses/libwxbase/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+  _package 2 ./usr/lib/{libwx_gtk*,wx/}
 }
 
-# /usr/share/locale
-package_wx-i18n() {
-  pkgdesc=""
-  depends=(libwxbase)
+package_wxgtk3() {
+  pkgdesc="wxGTK 3 libraries, config script and setup.h"
+  #depends=(wxgtk-common cairo fontconfig gdk-pixbuf2 gst-plugins-base-libs
+  #  gstreamer gtk3 libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11
+  #  libxtst libxxf86vm pango wayland webkit2gtk)
 
-  cd wxWidgets-$pkgver/gtk2-build
-  make DESTDIR="$pkgdir" install
-  rm -r "$pkgdir"/usr/{bin,include,lib,share/{aclocal,bakefile}}
-
-  mkdir -p "$pkgdir"/usr/share/licenses/$pkgname
-  ln -s /usr/share/licenses/libwxbase/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+  _package 3 ./usr/lib/{libwx_gtk*,wx/}
 }
 
+package_wx-utils() {
+  pkgdesc="wxWidgets utils"
+  #depends=(wxgtk-common)
 
-# development packages
-
-# /usr/lib/wx/{config,include}
-package_wxgtk2-config() {
-  pkgdesc=""
-  depends=(libwxbase libwxgtk2)
-
-  cd wxWidgets-$pkgver/gtk2-build
-  make DESTDIR="$pkgdir" install
-  rm -r "$pkgdir"/usr/{bin/wxrc*,include,lib/libwx_*,share}
-
-  mkdir -p "$pkgdir"/usr/share/licenses/$pkgname
-  ln -s /usr/share/licenses/libwxbase/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
-}
-
-# /usr/lib/wx/{config,include}
-package_wxgtk3-config() {
-  pkgdesc=""
-  depends=(libwxbase libwxgtk3)
-
-  cd wxWidgets-$pkgver/gtk3-build
-  make DESTDIR="$pkgdir" install
-  rm -r "$pkgdir"/usr/{bin/wxrc*,include,lib/{libwx_*,wx/3.0},share}
-
-  mkdir -p "$pkgdir"/usr/share/licenses/$pkgname
-  ln -s /usr/share/licenses/libwxbase/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
-}
-
-# /usr/include
-package_wx-headers() {
-  pkgdesc=""
-  depends=(libwxbase)
-
-  cd wxWidgets-$pkgver/gtk2-build
-  make DESTDIR="$pkgdir" install
-  rm -r "$pkgdir"/usr/{bin,lib,share}
-
-  mkdir -p "$pkgdir"/usr/share/licenses/$pkgname
-  ln -s /usr/share/licenses/libwxbase/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+  _package 2 ./usr/{bin/wxrc-$_wx_release,share/{aclocal/,bakefile/}}
+  mv "$pkgdir"/usr/bin/wxrc-$_wx_release "$pkgdir"/usr/bin/wxrc
+  ln -sf /usr/bin/gtk2-unicode-$_wx_release "$pkgdir"/usr/bin/wx-config
 }

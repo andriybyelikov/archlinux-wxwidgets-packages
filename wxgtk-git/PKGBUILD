@@ -1,13 +1,14 @@
-# Mantainer: Andriy Byelikov <andriybyelikov@gmail.com>
+# Maintainer: Andriy Byelikov <andriybyelikov@gmail.com>
 
 pkgbase=wxgtk-git
-pkgname=(libwxbase-git libwxgtk2-git libwxgtk3-git wx-i18n-git
-         wxgtk2-config-git wxgtk3-config-git wx-headers-git wx-utils-git)
-pkgver=3.1.5
+pkgname=(wxgtk-common-git wxgtk2-git wxgtk3-git wx-utils-git)
+_wx_release=3.1
+pkgver=$_wx_release.5-unreleased
 pkgrel=1
 arch=('x86_64')
 url="https://wxwidgets.org"
 license=('custom:wxWindows')
+#makedepends=(git)
 options=('!emptydirs')
 source=("git+https://github.com/wxWidgets/wxWidgets.git"
         "make-abicheck-non-fatal.patch")
@@ -20,108 +21,62 @@ prepare() {
   patch -Np1 -i ../make-abicheck-non-fatal.patch
 }
 
-_build_gtk() {
+_build() {
   mkdir -p gtk$1-build gtk$1-install
   cd gtk$1-build
   ../configure --prefix=/usr --with-opengl --enable-graphics_ctx \
     --enable-mediactrl --with-regex=builtin --disable-precomp-headers \
     --with-libpng=sys --with-libxpm=sys --with-libjpeg=sys --with-libtiff=sys \
     --with-gtk=$@
-  make DESTDIR=../gtk$1-install install
+  make DESTDIR="$srcdir"/wxWidgets/gtk$1-install install
 }
 
 build() {
   cd wxWidgets
   make -C locale allmo
-  _build_gtk 2
-  _build_gtk 3 --enable-webview
+  _build 2
+  cd ..
+  _build 3 --enable-webview
 }
 
 _package() {
   cd wxWidgets/gtk$1-install
-  cp -r --preserve=mode --parents $2 "$pkgdir"
-
+  shift
+  cp -r --preserve=mode --parents $@ "$pkgdir"
   cd ../docs
   install -Dm644 licence.txt "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }
 
-# Runtime packages
+package_wxgtk-common-git() {
+  pkgdesc="wxWidgets base libraries, headers and gettext catalogs"
+  #depends=(curl expat gcc-libs glib2 glibc libsecret xz zlib)
 
-package_wx-i18n-git() {
-  pkgdesc="wxWidgets gettext catalogs"
-  arch=('any')
-
-  _package 2 /usr/share/locale/
+  _package 2 ./usr/{include/,lib/libwx_base*,share/locale/}
 }
 
-package_libwxbase-git() {
-  pkgdesc="wxWidgets base libraries"
-  depends=(wx-i18n-git)
+package_wxgtk2-git() {
+  pkgdesc="wxGTK 2 libraries, config script and setup.h"
+  #depends=(wxgtk-common-git cairo fontconfig gdk-pixbuf2 gst-plugins-base-libs
+  #  gstreamer gtk2 libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11
+  #  libxtst libxxf86vm pango)
 
-  _package 2 /usr/lib/libwx_base*
+  _package 2 ./usr/lib/{libwx_gtk*,wx/}
 }
 
-package_libwxgtk2-git() {
-  pkgdesc="wxWidgets GTK 2 libraries"
-  depends=(libwxbase-git)
+package_wxgtk3-git() {
+  pkgdesc="wxGTK 3 libraries, config script and setup.h"
+  #depends=(wxgtk-common-git cairo fontconfig gdk-pixbuf2 gst-plugins-base-libs
+  #  gstreamer gtk3 libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11
+  #  libxtst libxxf86vm pango wayland webkit2gtk)
 
-  _package 2 /usr/lib/libwx_gtk*
+  _package 3 ./usr/lib/{libwx_gtk*,wx/}
 }
 
-package_libwxgtk3-git() {
-  pkgdesc="wxWidgets GTK 3 libraries"
-  depends=(libwxbase-git)
-
-  _package 3 /usr/lib/libwx_gtk*
-}
-
-# Development packages
-
-package_wxgtk2-config-git() {
-  pkgdesc="wxWidgets GTK 2 wx-config and setup.h"
-  arch=('any')
-  depends=(libwxbase-git libwxgtk2-git)
-
-  _package 2 /usr/lib/wx/{config,include}
-}
-
-package_wxgtk3-config-git() {
-  pkgdesc="wxWidgets GTK 3 wx-config and setup.h"
-  arch=('any')
-  depends=(libwxbase-git libwxgtk3-git)
-
-  _package 3 /usr/lib/wx/{config,include}
-}
-
-package_wx-headers-git() {
-  pkgdesc="wxWidgets headers"
-  arch=('any')
-  depends=(libwxbase-git)
-
-  _package 2 /usr/include/
-}
-
-# /usr/share/aclocal
-# /usr/share/bakefile
 package_wx-utils-git() {
   pkgdesc="wxWidgets utils"
-  depends=(libwxbase)
+  #depends=(wxgtk-common-git)
 
-  cd wxWidgets
-  cd utils-build
-  make DESTDIR="$pkgdir" install-wxrc
-  rm "$pkgdir"/usr/bin/wxrc
-  mv "$pkgdir"/usr/bin/wxrc-3.1 "$pkgdir"/usr/bin/wxrc
-  install -Dm644 ../wxwin.m4 "$pkgdir"/usr/share/aclocal/wxwin.m4
-  mkdir -p "$pkgdir"/usr/share/bakefile/presets
-  cp -r ../build/bakefiles/wxpresets/presets "$pkgdir"/usr/share/bakefile
-
-  install -Dm644 ../docs/licence.txt "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+  _package 2 ./usr/{bin/wxrc-$_wx_release,share/{aclocal/,bakefile/}}
+  mv "$pkgdir"/usr/bin/wxrc-$_wx_release "$pkgdir"/usr/bin/wxrc
+  ln -sf /usr/lib/wx/config/gtk3-unicode-$_wx_release "$pkgdir"/usr/bin/wx-config
 }
-
-# /usr/bin/wxrc
-package_wxrc-git() {
-  pkgdesc=""
-}
-
-# /usr/bin/wx-config
