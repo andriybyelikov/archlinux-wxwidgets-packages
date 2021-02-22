@@ -3,12 +3,12 @@
 pkgbase=wxgtk-git
 pkgname=(wxgtk-common-git wxgtk2-git wxgtk3-git wx-utils-git)
 _wx_release=3.1
-pkgver=$_wx_release.5-unreleased
+pkgver=$_wx_release.5
 pkgrel=1
 arch=('x86_64')
 url="https://wxwidgets.org"
 license=('custom:wxWindows')
-#makedepends=(git)
+makedepends=(git libpng libjpeg-turbo libtiff gtk2 libgl glu gst-plugins-base gtk3)
 options=('!emptydirs')
 source=("git+https://github.com/wxWidgets/wxWidgets.git"
         "make-abicheck-non-fatal.patch")
