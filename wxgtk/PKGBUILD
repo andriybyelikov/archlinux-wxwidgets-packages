@@ -48,34 +48,36 @@ _package() {
 
 package_wxgtk-common() {
   pkgdesc="wxWidgets base libraries, headers and gettext catalogs"
-  #depends=(curl expat gcc-libs glib2 glibc libsecret xz zlib)
+  depends=(expat gcc-libs zlib)
 
-  _package 2 ./usr/{include/,lib/libwx_base*,share/locale/}
+  _package 2 ./usr/{include/,lib/libwx_base*,share/locale}
 }
 
 package_wxgtk2() {
   pkgdesc="wxGTK 2 libraries, config script and setup.h"
-  #depends=(wxgtk-common cairo fontconfig gdk-pixbuf2 gst-plugins-base-libs
-  #  gstreamer gtk2 libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11
-  #  libxtst libxxf86vm pango)
+  depends=(cairo gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk2
+    libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxxf86vm
+    pango wxgtk-common)
 
-  _package 2 ./usr/lib/{libwx_gtk*,wx/}
+  _package 2 ./usr/lib/{libwx_gtk*,wx}
 }
 
 package_wxgtk3() {
   pkgdesc="wxGTK 3 libraries, config script and setup.h"
-  #depends=(wxgtk-common cairo fontconfig gdk-pixbuf2 gst-plugins-base-libs
-  #  gstreamer gtk3 libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11
-  #  libxtst libxxf86vm pango wayland webkit2gtk)
+  depends=(cairo gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk3
+    libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxxf86vm
+    pango wxgtk-common)
+  optdepends=('webkit2gtk: for webview support')
 
-  _package 3 ./usr/lib/{libwx_gtk*,wx/}
+  _package 3 ./usr/lib/{libwx_gtk*,wx}
 }
 
 package_wx-utils() {
-  pkgdesc="wxWidgets utils"
-  #depends=(wxgtk-common)
+  pkgdesc="wxWidgets utilities"
+  depends=(wxgtk-common)
+  install=wxgtk.install
 
-  _package 2 ./usr/{bin/wxrc-$_wx_release,share/{aclocal/,bakefile/}}
-  mv "$pkgdir"/usr/bin/wxrc-$_wx_release "$pkgdir"/usr/bin/wxrc
-  ln -sf /usr/lib/wx/config/gtk3-unicode-$_wx_release "$pkgdir"/usr/bin/wx-config
+  _package 2 ./usr/{bin/wxrc-$_wx_release,share/{aclocal,bakefile}}
+  for file in "$pkgdir"/usr/share/{aclocal,bakefile/presets}/*
+    do mv $file "$(echo $file | sed 's/\./-'$_wx_release'./')"; done
 }

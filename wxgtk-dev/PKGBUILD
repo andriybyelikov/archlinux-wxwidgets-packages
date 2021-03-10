@@ -1,7 +1,7 @@
 # Maintainer: Andriy Byelikov <andriybyelikov@gmail.com>
 
-pkgbase=wxgtk-git
-pkgname=(wxgtk-common-git wxgtk2-git wxgtk3-git wx-utils-git)
+pkgbase=wxgtk-dev
+pkgname=(wxgtk-common-dev wxgtk2-dev wxgtk3-dev wx-utils-dev)
 _wx_release=3.1
 pkgver=$_wx_release.5
 pkgrel=1
@@ -47,36 +47,38 @@ _package() {
   install -Dm644 licence.txt "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }
 
-package_wxgtk-common-git() {
+package_wxgtk-common-dev() {
   pkgdesc="wxWidgets base libraries, headers and gettext catalogs"
-  #depends=(curl expat gcc-libs glib2 glibc libsecret xz zlib)
+  depends=(expat gcc-libs zlib)
 
-  _package 2 ./usr/{include/,lib/libwx_base*,share/locale/}
+  _package 2 ./usr/{include/,lib/libwx_base*,share/locale}
 }
 
-package_wxgtk2-git() {
+package_wxgtk2-dev() {
   pkgdesc="wxGTK 2 libraries, config script and setup.h"
-  #depends=(wxgtk-common-git cairo fontconfig gdk-pixbuf2 gst-plugins-base-libs
-  #  gstreamer gtk2 libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11
-  #  libxtst libxxf86vm pango)
+  depends=(cairo gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk2
+    libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxxf86vm
+    pango wxgtk-common-dev)
 
-  _package 2 ./usr/lib/{libwx_gtk*,wx/}
+  _package 2 ./usr/lib/{libwx_gtk*,wx}
 }
 
-package_wxgtk3-git() {
+package_wxgtk3-dev() {
   pkgdesc="wxGTK 3 libraries, config script and setup.h"
-  #depends=(wxgtk-common-git cairo fontconfig gdk-pixbuf2 gst-plugins-base-libs
-  #  gstreamer gtk3 libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11
-  #  libxtst libxxf86vm pango wayland webkit2gtk)
+  depends=(cairo gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk3
+    libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxxf86vm
+    pango wxgtk-common-dev)
+  optdepends=('webkit2gtk: for webview support')
 
-  _package 3 ./usr/lib/{libwx_gtk*,wx/}
+  _package 3 ./usr/lib/{libwx_gtk*,wx}
 }
 
-package_wx-utils-git() {
-  pkgdesc="wxWidgets utils"
-  #depends=(wxgtk-common-git)
+package_wx-utils-dev() {
+  pkgdesc="wxWidgets utilities"
+  depends=(wxgtk-common-dev)
+  install=wxgtk.install
 
-  _package 2 ./usr/{bin/wxrc-$_wx_release,share/{aclocal/,bakefile/}}
-  mv "$pkgdir"/usr/bin/wxrc-$_wx_release "$pkgdir"/usr/bin/wxrc
-  ln -sf /usr/lib/wx/config/gtk3-unicode-$_wx_release "$pkgdir"/usr/bin/wx-config
+  _package 2 ./usr/{bin/wxrc-$_wx_release,share/{aclocal,bakefile}}
+  for file in "$pkgdir"/usr/share/{aclocal,bakefile/presets}/*
+    do mv $file "$(echo $file | sed 's/\./-'$_wx_release'./')"; done
 }

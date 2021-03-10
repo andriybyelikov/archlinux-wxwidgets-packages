@@ -1,5 +1,5 @@
-**
-!.gitignore
-!*/PKGBUILD
-!*.patch
-!deps.sh
+pkg
+src
+*.bz2
+*.zst
+wxgtk-dev/wxWidgets
