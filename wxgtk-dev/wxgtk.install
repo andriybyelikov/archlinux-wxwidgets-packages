@@ -1,7 +1,7 @@
 _update_symlinks() {
     stable="$(ls /usr/bin | grep wxrc- | sed 's/wxrc-\(.*\)/\1/' | sort | head -n 1)"
     dev="$(ls /usr/bin | grep wxrc- | sed 's/wxrc-\(.*\)/\1/' | sort | tail -n 1)"
-    gtk="$(ls /usr/lib/wx/config | grep -e $stable | sed 's/.*\(gtk.\).*/\1/' | sort | tail -n 1)"
+    gtk="$(ls /usr/lib/wx/config | grep $stable | sed 's/.*\(gtk.\).*/\1/' | sort | tail -n 1)"
     if [[ -z "$stable" && -z "$dev" ]]; then
         # if there is no version left installed then delete all symlinks
         rm -f /usr/bin/wx-config
