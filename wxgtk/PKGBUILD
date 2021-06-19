@@ -1,7 +1,8 @@
 # Maintainer: Andriy Byelikov <andriybyelikov@gmail.com>
 
 pkgbase=wxgtk
-pkgname=(wxgtk-common wxgtk2 wxgtk3 wx-utils)
+pkgname=(wx-runtime wxgtk2-runtime wxgtk3-runtime
+  wx-devel wxgtk2-devel wxgtk3-devel)
 _wx_release=3.0
 pkgver=$_wx_release.5.1
 pkgrel=1
@@ -39,45 +40,60 @@ build() {
 }
 
 _package() {
-  cd wxWidgets-$pkgver/gtk$1-install
+  cd "$srcdir"/wxWidgets-$pkgver/gtk$1-install
   shift
   cp -r --preserve=mode --parents $@ "$pkgdir"
   cd ../docs
   install -Dm644 licence.txt "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }
 
-package_wxgtk-common() {
-  pkgdesc="wxWidgets base libraries, headers and gettext catalogs"
+package_wx-runtime() {
+  pkgdesc="wxWidgets base libraries and gettext catalogs - stable branch"
   depends=(expat gcc-libs zlib)
 
-  _package 2 ./usr/{include/,lib/libwx_base*,share/locale}
+  _package 2 ./usr/{lib/libwx_base*,share/locale}
 }
 
-package_wxgtk2() {
-  pkgdesc="wxGTK 2 libraries, config script and setup.h"
+package_wxgtk2-runtime() {
+  pkgdesc="wxGTK2 libraries - stable branch"
   depends=(cairo gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk2
     libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxxf86vm
-    pango wxgtk-common)
+    pango wx-runtime)
 
-  _package 2 ./usr/lib/{libwx_gtk*,wx}
+  _package 2 ./usr/lib/libwx_gtk*
 }
 
-package_wxgtk3() {
-  pkgdesc="wxGTK 3 libraries, config script and setup.h"
+package_wxgtk3-runtime() {
+  pkgdesc="wxGTK3 libraries - stable branch"
   depends=(cairo gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk3
     libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxxf86vm
-    pango wxgtk-common)
+    pango wx-runtime)
   optdepends=('webkit2gtk: for webview support')
 
-  _package 3 ./usr/lib/{libwx_gtk*,wx}
+  _package 3 ./usr/lib/libwx_gtk*
 }
 
-package_wx-utils() {
-  pkgdesc="wxWidgets utilities"
-  depends=(wxgtk-common)
-  install=wxgtk.install
+package_wx-devel() {
+  pkgdesc="wxWidgets development files - stable branch"
+  depends=(archlinux-wxwidgets wx-runtime)
+  install=install_archlinux-wxwidgets.sh
 
+  _package 2 ./usr/include
   _package 2 ./usr/{bin/wxrc-$_wx_release,share/{aclocal,bakefile}}
   for file in "$pkgdir"/usr/share/{aclocal,bakefile/presets}/*
     do mv $file "$(echo $file | sed 's/\./-'$_wx_release'./')"; done
+}
+
+package_wxgtk2-devel() {
+  pkgdesc="wxGTK2 config script and setup.h - stable branch"
+  depends=(wx-devel wxgtk2-runtime)
+
+  _package 2 ./usr/lib/wx/{config,include}
+}
+
+package_wxgtk3-devel() {
+  pkgdesc="wxGTK3 config script and setup.h - stable branch"
+  depends=(wx-devel wxgtk3-runtime)
+
+  _package 3 ./usr/lib/wx/{config,include}
 }

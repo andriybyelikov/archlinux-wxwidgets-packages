@@ -1,0 +1,26 @@
+# Maintainer: Andriy Byelikov <andriybyelikov@gmail.com>
+
+pkgname=archlinux-wxwidgets
+pkgver=1
+pkgrel=1
+pkgdesc="Helper script to switch between wx-config, wxrc and other development scripts' versions"
+arch=('any')
+#url=""
+license=('GPL')
+makedepends=('bash' 'findutils' 'coreutils')
+source=(bin_archlinux-wxwidgets)
+sha256sums=(20d9a9d02e1fd920f029f9194ba39c308e85c517de1a173ccd6e977cd1c7629d)
+
+package() {
+  install -dm755 "$pkgdir"/usr/{bin,share/{aclocal,bakefile/presets}}
+  ln -s /dev/null "$pkgdir"/usr/bin/wx-config
+  ln -s /dev/null "$pkgdir"/usr/bin/wxrc
+  ln -s /dev/null "$pkgdir"/usr/share/aclocal/wxwin.m4
+  ln -s /dev/null "$pkgdir"/usr/share/bakefile/presets/wx.bkl
+  ln -s /dev/null "$pkgdir"/usr/share/bakefile/presets/wx_presets.py
+  ln -s /dev/null "$pkgdir"/usr/share/bakefile/presets/wx_unix.bkl
+  ln -s /dev/null "$pkgdir"/usr/share/bakefile/presets/wx_win32.bkl
+  ln -s /dev/null "$pkgdir"/usr/share/bakefile/presets/wx_xrc.bkl
+
+  install -Dm755 bin_archlinux-wxwidgets "${pkgdir}/usr/bin/archlinux-wxwidgets"
+}

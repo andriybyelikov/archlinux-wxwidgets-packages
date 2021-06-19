@@ -1,0 +1,229 @@
+#! /bin/bash
+
+# Arch Linux helper script to set/unset/check/fix the default wxWidgets configuration
+# This program may be freely redistributed under the terms of the GNU General Public License
+# Based on archlinux-java by Gillaume ALAUX as suggested by Lone_Wolf in https://bbs.archlinux.org/viewtopic.php?id=263892
+
+WX_CONFIG_DIR=/usr/lib/wx/config
+DEFAULT_NAME=default
+DEFAULT_PATH=/usr/bin/wx-config
+
+
+# Utility functions
+
+check_root() {
+  if [ $(id -u) -ne 0 ]; then
+    echo 'This script must be run as root'
+    exit 1
+  fi
+}
+
+# $1: parameter count given to this script for this option
+# $2: expected parameter count for this option
+check_param_count() {
+  if [ $1 -ne $2 ]; then
+    echo 'Wrong parameter count'
+    exit 2
+  fi
+}
+
+# Second level functions
+
+# $1 wxWidgets configuration name
+extract_version() {
+  echo $1 | sed 's/.*-.*-\(.*\)/\1/'
+}
+
+# $1 wxWidgets configuration name
+extract_version_major() {
+  echo $1 | sed 's/.*-.*-\(.*\)\..*/\1/'
+}
+
+# $1 wxWidgets configuration name
+extract_version_minor() {
+  echo $1 | sed 's/.*-.*-.*\.\(.*\)/\1/'
+}
+
+# $1 wxWidgets configuration name
+extract_gtk() {
+  echo $1 | sed 's/gtk\(.\).*/\1/'
+}
+
+get_default_config() {
+  path=$(readlink -e ${DEFAULT_PATH})
+  if [ "x${path}" != "x/dev/null" ]; then
+    echo ${path/${WX_CONFIG_DIR}\/}
+  else
+    echo ""
+  fi
+}
+
+get_installed_configs() {
+  if [ -d ${WX_CONFIG_DIR} ]; then
+    configs="$(find ${WX_CONFIG_DIR} -type f -exec basename {} \;)"
+  fi
+  echo ${configs[@]}
+}
+
+# $1: wxWidgets configuration name to test
+is_config_valid() {
+  test "x$1" != "x" && test "x$1" != "x${DEFAULT_NAME}" && test -x ${WX_CONFIG_DIR}/$1
+}
+
+unset_default_links() {
+  unlink ${DEFAULT_PATH} 2>/dev/null
+  unlink /usr/bin/wxrc 2>/dev/null
+  unlink /usr/share/aclocal/wxwin.m4 2>/dev/null
+  unlink /usr/share/bakefile/presets/wx.bkl 2>/dev/null
+  unlink /usr/share/bakefile/presets/wx_presets.py 2>/dev/null
+  unlink /usr/share/bakefile/presets/wx_unix.bkl 2>/dev/null
+  unlink /usr/share/bakefile/presets/wx_win32.bkl 2>/dev/null
+  unlink /usr/share/bakefile/presets/wx_xrc.bkl 2>/dev/null
+}
+
+# $1 wxWidgets configuration name to set as default
+set_default_links_to() {
+  unset_default_links
+  new_default=$1
+  ln -sf ${WX_CONFIG_DIR}/${new_default} ${DEFAULT_PATH}
+  version=extract_version
+  ln -sf /usr/bin/wxrc-${version} /usr/bin/wxrc
+  ln -sf /usr/share/aclocal/wxwin-${version}.m4 /usr/share/aclocal/wxwin.m4
+  ln -sf /usr/share/bakefile/presets/wx-${version}.bkl /usr/share/bakefile/presets/wx.bkl
+  ln -sf /usr/share/bakefile/presets/wx_presets-${version}.py /usr/share/bakefile/presets/wx_presets.py
+  ln -sf /usr/share/bakefile/presets/wx_unix-${version}.bkl /usr/share/bakefile/presets/wx_unix.bkl
+  ln -sf /usr/share/bakefile/presets/wx_win32-${version}.bkl /usr/share/bakefile/presets/wx_win32.bkl
+  ln -sf /usr/share/bakefile/presets/wx_xrc-${version}.bkl /usr/share/bakefile/presets/wx_xrc.bkl
+}
+
+# First level functions
+
+do_status() {
+  installed_config=($(get_installed_configs))
+  if [ ${#installed_config[@]} -eq 0 ]; then
+    echo 'No compatible wxWidgets configuration installed'
+  else
+    default_config=$(get_default_config)
+    echo 'Available wxWidgets configurations:'
+    for config in ${installed_config[@]}; do
+      if [ ${config} = "${default_config}" ]; then
+        echo -e "  ${config} (default)"
+      else
+        echo "  ${config}"
+      fi
+    done
+    if [ -z ${default_config} ]; then
+      echo 'No wxWidgets configuration set as default'
+    fi
+  fi
+}
+
+do_get() {
+  get_default_config
+}
+
+# $1: wxWidgets configuration name to set as default
+do_set() {
+  if ! is_config_valid $1; then
+    echo "'${WX_CONFIG_DIR}/$1' is not a valid wxWidgets configuration"
+    exit 1
+  fi
+  default=$(get_default_config)
+  if [ "x$1" != "x${default}" ] || ! is_config_valid ${default}; then
+    unset_default_links
+    set_default_links_to $1
+  fi
+}
+
+# $1: wxWidgets configuration name to unset
+do_unset() {
+  unset_default_links
+}
+
+choose_fix() {
+  # Pseudocode
+  # 
+  # prepare array with all installed configuration names
+  # if there are config names with even minor versions
+  #   discard all config names with odd minor versions
+  # discard config names without highest major.minor version
+  # if there is a config name with gtk3
+  #   discard config name with gtk2
+  # return result
+  configs=$(find ${WX_CONFIG_DIR} -type f -exec basename {} \;)
+  for config in $configs; do
+    minor=$(extract_version_minor $config)
+    if [ $((minor%2)) -eq 0 ]; then
+      for config in $configs; do
+        minor=$(extract_version_minor $config)
+        if [ $((minor%2)) -ne 0 ]; then
+          configs=${configs[@]/$config}
+        fi
+      done
+      break
+    fi
+  done
+  hmajor=0
+  hminor=0
+  for config in $configs; do
+    major=$(extract_version_major $config)
+    if [ $major -gt $hmajor ]; then
+      hmajor=$major
+    fi
+    minor=$(extract_version_minor $config)
+    if [ $major -eq $hmajor ] && [ $minor -gt $hminor ]; then
+      hminor=$minor
+    fi
+  done
+  for config in $configs; do
+    major=$(extract_version_major $config)
+    minor=$(extract_version_minor $config)
+    if [ $major -ne $hmajor ] || [ $minor -ne $hminor ]; then
+      configs=${configs[@]/$config}
+    fi
+  done
+  for config in $configs; do
+    gtk=$(extract_gtk $config)
+    if [ $gtk -eq 3 ]; then
+      for config in $configs; do
+        gtk=$(extract_gtk $config)
+        if [ $gtk -ne 3 ]; then
+          configs=${configs[@]/$config}
+        fi
+      done
+      break
+    fi
+  done
+  echo $configs
+}
+
+do_fix() {
+  default=$(get_default_config)
+  if ! is_config_valid ${default}; then
+    set_default_links_to $(choose_fix)
+    if ! is_config_valid $(get_default_config); then
+      echo 'No valid wxWidgets configuration found'
+    fi
+  fi
+}
+
+usage() {
+  echo "$(basename $0) <COMMAND>"
+  echo -e "\nCOMMAND:"
+  echo -e '\tstatus\t\tList installed wxWidgets configurations'
+  echo -e '\tget\t\tReturn the wxWidgets configuration set as default'
+  echo -e '\tset <CONFIG>\tForce <CONFIG> as default'
+  echo -e '\tunset\t\tUnset current default wxWidgets configuration'
+  echo -e '\tfix\t\tFix an invalid/broken default wxWidgets configuration'
+}
+
+## Main
+case $1 in
+  'status') do_status;;
+  'get')    do_get;;
+  'set')    check_root; check_param_count $# 2; do_set $2;;
+  'unset')  check_root; do_unset;;
+  'fix')    check_root; do_fix;;
+  'help' | '--help' | '-h' | '') usage;;
+  *)        echo "$(basename $0): unknown option '$@'"; exit 1;;
+esac

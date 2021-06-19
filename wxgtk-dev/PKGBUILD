@@ -1,23 +1,23 @@
 # Maintainer: Andriy Byelikov <andriybyelikov@gmail.com>
 
 pkgbase=wxgtk-dev
-pkgname=(wxgtk-common-dev wxgtk2-dev wxgtk3-dev wx-utils-dev)
+pkgname=(wx-runtime-dev wxgtk2-runtime-dev wxgtk3-runtime-dev
+  wx-devel-dev wxgtk2-devel-dev wxgtk3-devel-dev)
 _wx_release=3.1
 pkgver=$_wx_release.5
 pkgrel=1
 arch=('x86_64')
 url="https://wxwidgets.org"
 license=('custom:wxWindows')
-makedepends=(git libpng libjpeg-turbo libtiff gtk2 libgl glu gst-plugins-base gtk3)
+makedepends=(libpng libjpeg-turbo libtiff gtk2 libgl glu gst-plugins-base gtk3)
 options=('!emptydirs')
-source=("git+https://github.com/wxWidgets/wxWidgets.git"
+source=("https://github.com/wxWidgets/wxWidgets/releases/download/v$pkgver/wxWidgets-$pkgver.tar.bz2"
         "make-abicheck-non-fatal.patch")
-sha256sums=('SKIP'
+sha256sums=('d7b3666de33aa5c10ea41bb9405c40326e1aeb74ee725bb88f90f1d50270a224'
             '46a1bb97d69163547da13d5e23a4c73e68de27ee601da5d2fb5bc5c417931453')
 
 prepare() {
-  cd wxWidgets
-  git submodule update --init 3rdparty/catch
+  cd wxWidgets-$pkgver
   patch -Np1 -i ../make-abicheck-non-fatal.patch
 }
 
@@ -28,11 +28,11 @@ _build() {
     --enable-mediactrl --with-regex=builtin --disable-precomp-headers \
     --with-libpng=sys --with-libxpm=sys --with-libjpeg=sys --with-libtiff=sys \
     --with-gtk=$@
-  make DESTDIR="$srcdir"/wxWidgets/gtk$1-install install
+  make DESTDIR="$srcdir"/wxWidgets-$pkgver/gtk$1-install install
 }
 
 build() {
-  cd wxWidgets
+  cd wxWidgets-$pkgver
   make -C locale allmo
   _build 2
   cd ..
@@ -40,45 +40,60 @@ build() {
 }
 
 _package() {
-  cd wxWidgets/gtk$1-install
+  cd "$srcdir"/wxWidgets-$pkgver/gtk$1-install
   shift
   cp -r --preserve=mode --parents $@ "$pkgdir"
   cd ../docs
   install -Dm644 licence.txt "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }
 
-package_wxgtk-common-dev() {
-  pkgdesc="wxWidgets base libraries, headers and gettext catalogs"
+package_wx-runtime-dev() {
+  pkgdesc="wxWidgets base libraries and gettext catalogs - development branch"
   depends=(expat gcc-libs zlib)
 
-  _package 2 ./usr/{include/,lib/libwx_base*,share/locale}
+  _package 2 ./usr/{lib/libwx_base*,share/locale}
 }
 
-package_wxgtk2-dev() {
-  pkgdesc="wxGTK 2 libraries, config script and setup.h"
+package_wxgtk2-runtime-dev() {
+  pkgdesc="wxGTK2 libraries - development branch"
   depends=(cairo gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk2
     libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxxf86vm
-    pango wxgtk-common-dev)
+    pango wx-runtime-dev)
 
-  _package 2 ./usr/lib/{libwx_gtk*,wx}
+  _package 2 ./usr/lib/libwx_gtk*
 }
 
-package_wxgtk3-dev() {
-  pkgdesc="wxGTK 3 libraries, config script and setup.h"
+package_wxgtk3-runtime-dev() {
+  pkgdesc="wxGTK3 libraries - development branch"
   depends=(cairo gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk3
     libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxxf86vm
-    pango wxgtk-common-dev)
+    pango wx-runtime-dev)
   optdepends=('webkit2gtk: for webview support')
 
-  _package 3 ./usr/lib/{libwx_gtk*,wx}
+  _package 3 ./usr/lib/libwx_gtk*
 }
 
-package_wx-utils-dev() {
-  pkgdesc="wxWidgets utilities"
-  depends=(wxgtk-common-dev)
-  install=wxgtk.install
+package_wx-devel-dev() {
+  pkgdesc="wxWidgets development files - development branch"
+  depends=(archlinux-wxwidgets wx-runtime-dev)
+  install=install_archlinux-wxwidgets.sh
 
+  _package 2 ./usr/include
   _package 2 ./usr/{bin/wxrc-$_wx_release,share/{aclocal,bakefile}}
   for file in "$pkgdir"/usr/share/{aclocal,bakefile/presets}/*
     do mv $file "$(echo $file | sed 's/\./-'$_wx_release'./')"; done
+}
+
+package_wxgtk2-devel-dev() {
+  pkgdesc="wxGTK2 config script and setup.h - development branch"
+  depends=(wx-devel-dev wxgtk2-runtime-dev)
+
+  _package 2 ./usr/lib/wx/{config,include}
+}
+
+package_wxgtk3-devel-dev() {
+  pkgdesc="wxGTK3 config script and setup.h - development branch"
+  depends=(wx-devel-dev wxgtk3-runtime-dev)
+
+  _package 3 ./usr/lib/wx/{config,include}
 }
