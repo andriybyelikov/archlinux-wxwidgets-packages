@@ -9,7 +9,7 @@ arch=('any')
 license=('GPL')
 makedepends=('bash' 'findutils' 'coreutils')
 source=(bin_archlinux-wxwidgets)
-sha256sums=(20d9a9d02e1fd920f029f9194ba39c308e85c517de1a173ccd6e977cd1c7629d)
+sha256sums=(514229bb4ca13340d9f4948a33c0fc614fe8bda26afd8a3f73d856334eea2a83)
 
 package() {
   install -dm755 "$pkgdir"/usr/{bin,share/{aclocal,bakefile/presets}}

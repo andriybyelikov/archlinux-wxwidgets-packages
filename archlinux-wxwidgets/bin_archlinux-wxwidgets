@@ -86,7 +86,7 @@ set_default_links_to() {
   unset_default_links
   new_default=$1
   ln -sf ${WX_CONFIG_DIR}/${new_default} ${DEFAULT_PATH}
-  version=extract_version
+  version=$(extract_version $1)
   ln -sf /usr/bin/wxrc-${version} /usr/bin/wxrc
   ln -sf /usr/share/aclocal/wxwin-${version}.m4 /usr/share/aclocal/wxwin.m4
   ln -sf /usr/share/bakefile/presets/wx-${version}.bkl /usr/share/bakefile/presets/wx.bkl
