@@ -7,7 +7,7 @@ pkgdesc="Helper script to switch between wx-config, wxrc and other development s
 arch=('any')
 #url=""
 license=('GPL')
-makedepends=('bash' 'findutils' 'coreutils')
+depends=('bash')
 source=(bin_archlinux-wxwidgets)
 sha256sums=(514229bb4ca13340d9f4948a33c0fc614fe8bda26afd8a3f73d856334eea2a83)
 

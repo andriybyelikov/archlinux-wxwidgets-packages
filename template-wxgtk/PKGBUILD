@@ -1,10 +1,10 @@
 # Maintainer: Andriy Byelikov <andriybyelikov@gmail.com>
 
-pkgbase=wxgtk-dev
-pkgname=(wx-runtime-dev wxgtk2-runtime-dev wxgtk3-runtime-dev
-         wx-devel-dev wxgtk2-devel-dev wxgtk3-devel-dev)
-_wx_release=3.1
-pkgver=$_wx_release.5
+pkgbase=wxgtk@branch_suffix@
+pkgname=(wx-runtime@branch_suffix@ wxgtk2-runtime@branch_suffix@ wxgtk3-runtime@branch_suffix@
+         wx-devel@branch_suffix@ wxgtk2-devel@branch_suffix@ wxgtk3-devel@branch_suffix@)
+_wx_release=@release@
+pkgver=$_wx_release@subrelease@
 pkgrel=1
 arch=('x86_64')
 url="https://wxwidgets.org"
@@ -13,7 +13,7 @@ makedepends=(libpng libjpeg-turbo libtiff gtk2 libgl glu gst-plugins-base gtk3@m
 options=('!emptydirs')
 source=("https://github.com/wxWidgets/wxWidgets/releases/download/v$pkgver/wxWidgets-$pkgver.tar.bz2"
         "make-abicheck-non-fatal.patch")
-sha256sums=('d7b3666de33aa5c10ea41bb9405c40326e1aeb74ee725bb88f90f1d50270a224'
+sha256sums=(@sha256sum@
             '46a1bb97d69163547da13d5e23a4c73e68de27ee601da5d2fb5bc5c417931453')
 
 prepare() {
@@ -47,33 +47,31 @@ _package() {
   install -Dm644 licence.txt "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }
 
-package_wx-runtime-dev() {
-  pkgdesc="wxWidgets base libraries and gettext catalogs (development branch)"
-  depends=(curl expat glib2 libsecret zlib)
+package_wx-runtime@branch_suffix@() {
+  pkgdesc="wxWidgets base libraries and gettext catalogs@desc_branch@"
+  depends=(@wx_runtime_depends@)
 
   _package 2 ./usr/{lib/libwx_base*,share/locale}
 }
 
-package_wxgtk2-runtime-dev() {
-  pkgdesc="wxGTK+2 libraries (development branch)"
-  depends=(wx-runtime-dev cairo fontconfig gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk2
-    libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxtst libxxf86vm pango)
+package_wxgtk2-runtime@branch_suffix@() {
+  pkgdesc="wxGTK+2 libraries@desc_branch@"
+  depends=(wx-runtime@branch_suffix@ @wxgtk2_runtime_depends@)
 
   _package 2 ./usr/lib/libwx_gtk*
 }
 
-package_wxgtk3-runtime-dev() {
-  pkgdesc="wxGTK+3 libraries (development branch)"
-  depends=(wx-runtime-dev cairo fontconfig gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk3
-    libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxtst libxxf86vm pango wayland)
+package_wxgtk3-runtime@branch_suffix@() {
+  pkgdesc="wxGTK+3 libraries@desc_branch@"
+  depends=(wx-runtime@branch_suffix@ @wxgtk3_runtime_depends@)
   optdepends=('webkit2gtk: for webview support')
 
   _package 3 ./usr/lib/libwx_gtk*
 }
 
-package_wx-devel-dev() {
-  pkgdesc="wxWidgets development files (development branch)"
-  depends=(archlinux-wxwidgets wx-runtime-dev)
+package_wx-devel@branch_suffix@() {
+  pkgdesc="wxWidgets development files@desc_branch@"
+  depends=(archlinux-wxwidgets wx-runtime@branch_suffix@)
   install=install_archlinux-wxwidgets.sh
 
   _package 2 ./usr/include
@@ -82,16 +80,16 @@ package_wx-devel-dev() {
     do mv $file "$(echo $file | sed 's/\./-'$_wx_release'./')"; done
 }
 
-package_wxgtk2-devel-dev() {
-  pkgdesc="wxGTK+2 config script and setup.h (development branch)"
-  depends=(wx-devel-dev wxgtk2-runtime-dev)
+package_wxgtk2-devel@branch_suffix@() {
+  pkgdesc="wxGTK+2 config script and setup.h@desc_branch@"
+  depends=(wx-devel@branch_suffix@ wxgtk2-runtime@branch_suffix@)
 
   _package 2 ./usr/lib/wx/{config,include}
 }
 
-package_wxgtk3-devel-dev() {
-  pkgdesc="wxGTK+3 config script and setup.h (development branch)"
-  depends=(wx-devel-dev wxgtk3-runtime-dev)
+package_wxgtk3-devel@branch_suffix@() {
+  pkgdesc="wxGTK+3 config script and setup.h@desc_branch@"
+  depends=(wx-devel@branch_suffix@ wxgtk3-runtime@branch_suffix@)
 
   _package 3 ./usr/lib/wx/{config,include}
 }

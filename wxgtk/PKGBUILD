@@ -2,7 +2,7 @@
 
 pkgbase=wxgtk
 pkgname=(wx-runtime wxgtk2-runtime wxgtk3-runtime
-  wx-devel wxgtk2-devel wxgtk3-devel)
+         wx-devel wxgtk2-devel wxgtk3-devel)
 _wx_release=3.0
 pkgver=$_wx_release.5.1
 pkgrel=1
@@ -48,33 +48,29 @@ _package() {
 }
 
 package_wx-runtime() {
-  pkgdesc="wxWidgets base libraries and gettext catalogs - stable branch"
-  depends=(expat gcc-libs zlib)
+  pkgdesc="wxWidgets base libraries and gettext catalogs"
+  depends=(expat zlib)
 
   _package 2 ./usr/{lib/libwx_base*,share/locale}
 }
 
 package_wxgtk2-runtime() {
-  pkgdesc="wxGTK2 libraries - stable branch"
-  depends=(cairo gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk2
-    libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxxf86vm
-    pango wx-runtime)
+  pkgdesc="wxGTK+2 libraries"
+  depends=(wx-runtime gst-plugins-base-libs gtk2 libjpeg-turbo libnotify)
 
   _package 2 ./usr/lib/libwx_gtk*
 }
 
 package_wxgtk3-runtime() {
-  pkgdesc="wxGTK3 libraries - stable branch"
-  depends=(cairo gdk-pixbuf2 glib2 gst-plugins-base-libs gstreamer gtk3
-    libglvnd libjpeg-turbo libnotify libpng libsm libtiff libx11 libxxf86vm
-    pango wx-runtime)
+  pkgdesc="wxGTK+3 libraries"
+  depends=(wx-runtime gst-plugins-base-libs gtk3 libjpeg-turbo libnotify)
   optdepends=('webkit2gtk: for webview support')
 
   _package 3 ./usr/lib/libwx_gtk*
 }
 
 package_wx-devel() {
-  pkgdesc="wxWidgets development files - stable branch"
+  pkgdesc="wxWidgets development files"
   depends=(archlinux-wxwidgets wx-runtime)
   install=install_archlinux-wxwidgets.sh
 
@@ -85,14 +81,14 @@ package_wx-devel() {
 }
 
 package_wxgtk2-devel() {
-  pkgdesc="wxGTK2 config script and setup.h - stable branch"
+  pkgdesc="wxGTK+2 config script and setup.h"
   depends=(wx-devel wxgtk2-runtime)
 
   _package 2 ./usr/lib/wx/{config,include}
 }
 
 package_wxgtk3-devel() {
-  pkgdesc="wxGTK3 config script and setup.h - stable branch"
+  pkgdesc="wxGTK+3 config script and setup.h"
   depends=(wx-devel wxgtk3-runtime)
 
   _package 3 ./usr/lib/wx/{config,include}
