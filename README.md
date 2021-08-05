@@ -107,3 +107,32 @@ I have added the wxgtk and wxgtk-dev folders with their PKGBUILD to the repo
 pre-generated. They are generated from the template-wxgtk folder where
 gen_pkgbuild.sh generates the PKGBUILD with the particular differences for each
 version.
+
+## List of resulting packages
+
+#### Script to switch between wxWidgets configurations (only needed for development)
+```
+archlinux-wxwidgets
+```
+
+#### 3.0.x packages
+```
+wx-runtime
+wxgtk2-runtime
+wxgtk3-runtime
+
+wx-devel
+wxgtk2-devel
+wxgtk3-devel
+```
+
+#### 3.1.x packages
+```
+wx-runtime-dev
+wxgtk2-runtime-dev
+wxgtk3-runtime-dev
+
+wx-devel-dev
+wxgtk2-devel-dev
+wxgtk3-devel-dev
+```
