@@ -9,7 +9,7 @@ pkgrel=1
 arch=('x86_64')
 url="https://wxwidgets.org"
 license=('custom:wxWindows')
-makedepends=(libpng libjpeg-turbo libtiff gtk2 libgl glu gst-plugins-base gtk3@makedepends@)
+makedepends=(libpng libjpeg-turbo libtiff gtk2 libgl glu gst-plugins-base gtk3 curl libsecret)
 options=('!emptydirs')
 source=("https://github.com/wxWidgets/wxWidgets/releases/download/v$pkgver/wxWidgets-$pkgver.tar.bz2"
         "make-abicheck-non-fatal.patch")
